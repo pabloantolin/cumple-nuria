@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17121a">
+<title>Nuria, 41</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..700&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: una carta de restaurante nocturna, en tres capítulos que se abren uno tras otro */
+:root{
+  --night:#17121a;
+  --night-2:#211a25;
+  --line:#3a2f3d;
+  --paper:#f3e9dc;
+  --muted:#b9aba3;
+  --candle:#e8a85c;
+  --wine:#9a3550;
+  --display:"Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+  --body:"Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+canvas{max-width:100%;min-width:0}
+.card,.card>*{min-width:0;max-width:100%}
+button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body{background:var(--night);color:var(--paper);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));}
+.wrap{max-width:1040px;margin:0 auto;min-width:0;overflow-x:clip;padding-block:40px 80px;display:flex;flex-direction:column;gap:72px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--candle)}
+h1,h2,h3{font-family:var(--display);font-weight:500;text-wrap:balance;margin:0}
+p{margin:0}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:32px;align-items:end}
+.hero h1{font-size:clamp(56px, 11vw, 132px);line-height:.88;font-style:italic;letter-spacing:-.02em}
+.hero h1 span{display:block;font-style:normal;font-weight:700;color:var(--candle)}
+.hero .intro{display:flex;flex-direction:column;gap:16px;max-width:42ch;color:var(--muted);font-size:17px}
+.hero .intro strong{color:var(--paper);font-weight:600}
+.hero canvas{width:100%;height:220px;display:block;border-radius:2px}
+.rules{display:flex;gap:24px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+.rules b{color:var(--paper);font-weight:500}
+
+/* Capítulos */
+.chapter{display:flex;flex-direction:column;gap:28px;scroll-margin-top:24px}
+.chapter-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 24px;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:16px}
+.chapter-head .num{font-family:var(--display);font-style:italic;font-size:64px;line-height:1;color:var(--wine);grid-row:span 2}
+.chapter-head h2{font-size:clamp(30px, 4.6vw, 44px)}
+.chapter-head p{color:var(--muted);max-width:60ch}
+
+.grid{display:grid;gap:16px}
+.grid.six{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid.dest{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+.card{appearance:none;font:inherit;color:inherit;text-align:left;cursor:pointer;background:var(--night-2);border:1px solid var(--line);
+  border-radius:4px;padding:0;display:flex;flex-direction:column;overflow:hidden;transition:transform .25s ease,border-color .25s ease, opacity .25s ease;min-width:0}
+.card:hover{transform:translateY(-3px);border-color:var(--muted)}
+.card:focus-visible{outline:2px solid var(--candle);outline-offset:3px}
+.card canvas{width:100%;aspect-ratio:16/10;display:block;max-width:100%}
+.card .body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:10px;flex:1}
+.card h3{font-size:28px;line-height:1.05}
+.card h3 em{color:var(--candle)}
+.card .tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.card .desc{color:var(--muted);font-size:15px}
+.card .pick{margin-top:auto;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--candle);padding-top:8px}
+.card[aria-pressed="true"]{border-color:var(--candle);box-shadow:0 0 0 1px var(--candle)}
+.card[aria-pressed="true"] .pick::before{content:"✓ "}
+.grid.has-choice .card[aria-pressed="false"]{opacity:.42}
+
+.clues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.clues li{display:grid;grid-template-columns:18px 1fr;gap:8px;color:var(--muted);font-size:15px}
+.clues li::before{content:"·";color:var(--candle);font-weight:700;font-size:20px;line-height:1}
+.queso{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:13px;line-height:1.4;color:var(--paper);
+  background:rgba(232,168,92,.10);border:1px dashed var(--candle);border-radius:3px;padding:8px 10px}
+.queso svg{width:18px;height:18px;flex:none;margin-top:1px}
+.tentativo{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-left:3px solid var(--candle);
+  padding:12px 16px;color:var(--muted);font-size:15px;max-width:70ch}
+.tentativo b{color:var(--paper);font-weight:600}
+.podio-lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.slot{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 14px;border:1px dashed var(--line);border-radius:4px;color:var(--muted)}
+.slot.lleno{border-style:solid;border-color:var(--candle);background:var(--night-2);color:var(--paper)}
+.slot .ord{font-family:var(--display);font-style:italic;font-size:34px;line-height:1;color:var(--wine);text-align:center}
+.slot.lleno .ord{color:var(--candle)}
+.slot .what{display:flex;flex-direction:column;min-width:0}
+.slot .what b{font-family:var(--display);font-weight:500;font-size:20px}
+.slot small{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.slot .ops{display:flex;gap:6px}
+.mini{appearance:none;width:44px;height:44px;font-size:18px;border-radius:2px;border:1px solid var(--line);background:transparent;color:var(--paper);font:inherit;cursor:pointer}
+.mini:disabled{opacity:.3;cursor:default}
+.mini:focus-visible{outline:2px solid var(--candle);outline-offset:2px}
+.podio-msg{color:var(--muted);font-size:15px}
+.visto{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:13px;line-height:1.4;color:var(--paper);
+  border:1px solid var(--wine);border-radius:3px;padding:8px 10px}
+.visto span:first-child{color:var(--candle);font-size:16px;line-height:1.1}
+.aviso-paso{display:flex;gap:12px;align-items:center;background:var(--candle);color:var(--night);border-radius:3px;padding:12px 16px;font-weight:600;font-size:16px}
+.aviso-paso::before{content:"→";font-family:var(--display);font-size:22px;line-height:1}
+.podio-ayuda{display:flex;flex-wrap:wrap;gap:8px 20px;color:var(--muted);font-size:14px}
+.podio-ayuda span{display:flex;align-items:center;gap:6px}
+.k{display:inline-grid;place-items:center;min-width:26px;height:26px;border:1px solid var(--line);border-radius:2px;color:var(--paper);font-weight:500}
+.explorar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;color:var(--muted);font-size:15px}
+.explorar span{flex:1 1 240px;min-width:0}
+.dest-top{display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;align-items:center;padding:18px 18px 0}
+.dest-top canvas{width:120px;height:120px;aspect-ratio:auto}
+.dest-top .tag{display:block;margin-bottom:6px}
+
+/* Final */
+.finale{background:var(--night-2);border:1px solid var(--candle);border-radius:4px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden}
+.finale canvas{width:100%;height:100%;min-height:260px;display:block}
+.finale .txt{padding:32px;display:flex;flex-direction:column;gap:18px}
+.finale h2{font-size:clamp(34px,5vw,52px);font-style:italic}
+.ticket{font-family:var(--mono);font-size:14px;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line);padding-block:14px;display:flex;flex-direction:column;gap:6px}
+.ticket div{display:grid;grid-template-columns:110px 1fr;gap:8px}
+.ticket span:first-child{color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-size:11px;padding-top:2px}
+.actions{display:flex;gap:12px;flex-wrap:wrap}
+.btn{appearance:none;font:inherit;font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+  padding:12px 18px;border-radius:2px;border:1px solid var(--candle);background:var(--candle);color:var(--night)}
+.btn.ghost{background:transparent;color:var(--paper);border-color:var(--line)}
+.btn:focus-visible{outline:2px solid var(--paper);outline-offset:2px}
+.copied{font-family:var(--mono);font-size:12px;color:var(--candle)}
+textarea#clave{width:100%;font-family:var(--mono);font-size:16px;background:var(--night);color:var(--paper);border:1px solid var(--line);padding:10px;border-radius:2px;resize:none}
+footer{color:var(--muted);font-size:13px;text-align:center;font-family:var(--mono);letter-spacing:.06em}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .grid.six{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .finale{grid-template-columns:minmax(0,1fr)}
+  .finale canvas{min-height:180px}
+}
+@media (max-width:560px){
+  .grid.six,.grid.three{grid-template-columns:minmax(0,1fr)}
+  .chapter-head .num{font-size:48px}
+  .dest-top{grid-template-columns:88px minmax(0,1fr)}
+  .dest-top canvas{width:88px;height:88px}
+  .finale .txt{padding:22px}
+}
+@media (hover:none){ .card:hover{transform:none;border-color:var(--line)} .card[aria-pressed="true"]:hover{border-color:var(--candle)} }
+@media (max-width:560px){
+  body{font-size:16px}
+  .wrap{padding-block:24px 56px;gap:52px}
+  .hero canvas{height:150px}
+  .hero .intro{font-size:16px}
+  .card canvas{aspect-ratio:16/8}
+  .card h3{font-size:26px}
+  .slot{grid-template-columns:36px minmax(0,1fr);grid-template-areas:"o w" "o p";row-gap:10px}
+  .slot .ord{grid-area:o;font-size:30px}
+  .slot .what{grid-area:w}
+  .slot .ops{grid-area:p}
+  .ticket div{grid-template-columns:1fr;gap:2px}
+  .finale canvas{min-height:140px}
+  .actions .btn{flex:1 1 100%;min-height:48px}
+  .aviso-paso{font-size:15px}
+}
+@media (prefers-reduced-motion:reduce){ .card{transition:none} html{scroll-behavior:auto} }
+html{scroll-behavior:smooth}
+</style>
+
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Una escapada · una mesa · una noche fuera</p>
+      <h1>Nuria,<span>41</span></h1>
+    </div>
+    <div class="intro">
+      <canvas id="heroCanvas" aria-hidden="true"></canvas>
+      <p><strong>Tu regalo es un fin de semana para dos alrededor de una gran mesa.</strong> No te voy a decir dónde. Solo te voy a contar qué se cocina, qué hay alrededor y en qué época del año.</p>
+      <p>Elige tus tres favoritas, por orden, y una época del año. El resto es cosa mía.</p>
+    </div>
+  </header>
+
+  <section class="chapter" id="paso1" aria-labelledby="t1">
+    <div class="chapter-head">
+      <span class="num">I</span>
+      <h2 id="t1">¿Qué te apetece comer?</h2>
+      <p>Seis cocinas, seis formas de sentarse a la mesa. Todas son casas reconocidas; ninguna lleva nombre. Vas a elegir tres favoritas: abre una cocina, mira sus lugares y añade la que más te tiente.</p>
+    </div>
+    <p class="aviso-paso" id="paso1Aviso" hidden aria-live="polite"></p>
+    <div class="grid six" id="cocinas"></div>
+  </section>
+
+  <section class="chapter" id="paso2" aria-labelledby="t2" hidden>
+    <div class="chapter-head">
+      <span class="num">II</span>
+      <h2 id="t2">Varios sitios cocinan así. ¿Cuál entra en tu podio?</h2>
+      <p>Cada mesa tiene su paisaje alrededor. La brújula señala hacia dónde saldríamos desde casa.</p>
+    </div>
+    <div class="explorar">
+      <button class="btn ghost" id="volverCocinas" type="button">↑ Ver otras cocinas</button>
+      <span>¿Ninguno te convence? Sube y abre otra cocina: puedes explorarlas todas antes de decidir.</span>
+    </div>
+    <div class="grid dest" id="destinos"></div>
+  </section>
+
+  <section class="chapter" id="podio" aria-labelledby="tp" hidden>
+    <div class="chapter-head">
+      <span class="num">✦</span>
+      <h2 id="tp">Tu podio</h2>
+      <p>Algunas casas tienen pocas mesas y quizá no haya hueco en la primera. Por eso necesito tus tres favoritas, por orden.</p>
+    </div>
+    <p class="aviso-paso" id="podioPaso" aria-live="polite"></p>
+    <div class="actions">
+      <button class="btn" id="masOpciones" type="button">Elegir otra opción</button>
+      <button class="btn" id="aEstacion" type="button" hidden>Siguiente: la estación</button>
+    </div>
+    <ol class="podio-lista" id="podioLista"></ol>
+    <p class="podio-ayuda"><span><b class="k">↑</b><b class="k">↓</b> cambian el orden</span><span><b class="k">×</b> quita una opción</span><span>También puedes quitarla tocando de nuevo su tarjeta.</span></p>
+    <p class="podio-msg" id="podioMsg"></p>
+  </section>
+
+  <section class="chapter" id="paso3" aria-labelledby="t3" hidden>
+    <div class="chapter-head">
+      <span class="num">III</span>
+      <h2 id="t3">¿En qué estación?</h2>
+      <p>Tú eliges la época; yo busco el fin de semana en que haya mesa libre.</p>
+    </div>
+    <p class="tentativo"><span aria-hidden="true" style="color:var(--candle);font-family:var(--display);font-size:22px;line-height:1">≈</span><span><b>La estación es orientativa.</b> Estas casas tienen pocas mesas y se llenan con meses de antelación. Si en tu estación no hay hueco, buscaré la fecha libre más cercana.</span></p>
+    <div class="grid three" id="estaciones"></div>
+  </section>
+
+  <section id="final" hidden aria-live="polite">
+    <div class="finale">
+      <canvas id="finalCanvas" aria-hidden="true"></canvas>
+      <div class="txt">
+        <p class="eyebrow">Decidido</p>
+        <h2>Ya está. Ahora me toca a mí.</h2>
+        <p style="color:var(--muted)">Intentaré la primera; si no hay mesa, voy a por la segunda, y luego la tercera.</p>
+        <div class="ticket" id="ticket"></div>
+        <p style="color:var(--muted)">Mándame tu elección con este botón y la pegas en un mensaje. Lo que falta, la mesa y la noche, lo reservo yo.</p>
+        <div class="actions">
+          <button class="btn" id="copiar" type="button">Copiar mi elección</button>
+          <button class="btn ghost" id="reiniciar" type="button">Volver a elegir</button>
+        </div>
+        <span class="copied" id="copiado" hidden>Copiado. Ya puedes pegarlo en un mensaje.</span>
+        <textarea id="clave" rows="3" readonly hidden aria-label="Tu elección en texto"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <footer>Feliz cumpleaños · con todo mi cariño</footer>
+</div>
+
+<script>
+const HOME = {lat:42.136, lon:-0.408};
+
+const COCINAS = [
+  {id:"FUEGO", nombre:"Fuego", sub:"Brasa y parrilla", scene:"fuego",
+   desc:"Brasas de encina y carbón. Pescado entero que se asa en la calle, a la vista de todos, o una chuleta de vaca vieja que llega crepitando. Producto, sal y humo; casi nada más."},
+  {id:"RAIZ", nombre:"Raíz", sub:"Cocina vasca y navarra de autor", scene:"raiz",
+   desc:"Recetario del norte reescrito por familias de oficio: verdura de ribera, pichón, piperrada, huevo con trufa, huerto propio. A un lado u otro de una frontera."},
+  {id:"MONTE", nombre:"Montaña", sub:"Cocina de altura", scene:"monte",
+   desc:"Trufa negra, trucha de río, corzo, setas y hierbas de la sierra. Muchos bocados pequeños que saben a paisaje, servidos por quien sale a buscarlos."},
+  {id:"MAR", nombre:"Mar", sub:"Pescado, marisco y arroces", scene:"mar",
+   desc:"Gamba roja, arroces del delta, pescado de la lonja de esa misma mañana. Un clásico con cuatro décadas de estrella o una pareja joven junto al puerto."},
+  {id:"HUERTA", nombre:"Huerta y vino", sub:"Cocina de tierra de viñedos", scene:"huerta",
+   desc:"Lo que se recoge esa mañana en el huerto, platos de dos o tres ingredientes, o cocina de horno de leña y sarmiento. Y bodegas con miles de vinos."},
+  {id:"FANTASIA", nombre:"Fantasía", sub:"Cocina de autor que sorprende", scene:"fantasia",
+   desc:"Un menú que se cuenta como un cuento, con platos que juegan y hacen sonreír. O la cocina de un palacio entre naranjos, que rinde homenaje a veinte años de estrella."}
+];
+
+const DESTINOS = {
+  FUEGO:[
+    {id:"A", titulo:"El puerto de las parrillas", queso:true, lat:43.304, lon:-2.204, pistas:[
+      "Un pueblo de pescadores sobre una península a la que llaman ratón por su forma.",
+      "De aquí salió el primer marino que completó la vuelta al mundo.",
+      "Viñedos de vino blanco ligero que caen hacia el mar Cantábrico."]},
+    {id:"B", titulo:"La villa del mercado", lat:43.135, lon:-2.078, pistas:[
+      "Cada sábado su mercado llena las plazas de alubias, verdura y productos de caserío.",
+      "Un río cruza el casco viejo bajo puentes de piedra, y hay un museo de marionetas.",
+      "A media hora, la ciudad de la playa en forma de concha."]}
+  ],
+  RAIZ:[
+    {id:"A", titulo:"La ciudad amurallada", lat:42.816, lon:-1.644, pistas:[
+      "Una ciudad que ya conoces de tus años de estudiante. Volver, esta vez a cenar por todo lo alto.",
+      "Murallas, bastiones y una ciudadela con forma de estrella.",
+      "Cafés antiguos donde se sentaba un escritor americano con premio Nobel, y barras llenas de pintxos."]},
+    {id:"B", titulo:"El pueblo del otro lado", fuera:"Ojo: esta opción sale de España, cruzamos a Francia.", lat:43.307, lon:-1.499, pistas:[
+      "Casas blancas con contraventanas rojas y un frontón en la plaza.",
+      "Está entre los pueblos más bonitos de su país, al otro lado de la frontera.",
+      "Dormirías en la misma casa donde cenas; cerca, ristras de pimientos secándose en las fachadas."]}
+  ],
+  MONTE:[
+    {id:"A", titulo:"El molino del río", lat:40.433, lon:-1.583, pistas:[
+      "Un antiguo molino de lana junto a un río de montaña, entre pinares.",
+      "A un paseo, un pueblo rojizo colgado sobre una hoz, con murallas que trepan la roca.",
+      "Dormirías allí mismo, junto al río, bajo un cielo muy estrellado."]},
+    {id:"B", titulo:"La villa de piedra", queso:true, visto:"Aquí ya te sentaste una vez. Los menús cambian con los años, así que la cocina no será la que recuerdas.", lat:42.418, lon:0.139, pistas:[
+      "Una plaza mayor porticada dentro de murallas medievales.",
+      "Dos ríos de montaña se juntan a sus pies.",
+      "Al fondo, cumbres de las más altas de la cordillera y un parque nacional de cañones. Es la más cercana a casa."]}
+  ],
+  MAR:[
+    {id:"A", titulo:"El puerto de la lonja", lat:41.067, lon:1.059, pistas:[
+      "Un puerto pesquero con barcas de colores y subasta de pescado cada tarde.",
+      "A veinte minutos, un anfiteatro romano frente al mar.",
+      "Más al sur, un delta de arrozales y aves."]},
+    {id:"B", titulo:"Las calas escondidas", queso:true, lat:40.252, lon:0.281, pistas:[
+      "Calas pequeñas y un sendero que bordea el mar por una sierra protegida.",
+      "Cerca, un castillo de templarios sobre una roca rodeada de agua.",
+      "Un pueblo tranquilo, lejos del bullicio de verano."]}
+  ],
+  HUERTA:[
+    {id:"A", titulo:"La venta del huerto", lat:42.360, lon:-2.578, pistas:[
+      "Una aldea de pocas decenas de vecinos al pie de una sierra.",
+      "A un cuarto de hora, una calle entera de tapas que es leyenda.",
+      "Viñedos hasta donde llega la vista."]},
+    {id:"B", titulo:"El barrio de las bodegas", lat:42.577, lon:-2.847, pistas:[
+      "Junto a la estación de tren, bodegas centenarias puerta con puerta.",
+      "Cada verano celebran una batalla en la que la munición es vino.",
+      "Se come en una casa palacio, con horno de leña y parrilla de sarmiento."]},
+    {id:"C", titulo:"Las terrazas de pizarra", lat:41.264, lon:0.906, pistas:[
+      "Un pueblo al pie de una sierra de paredes rojizas, territorio de escaladores.",
+      "Viñas en terrazas de pizarra negra que dan algunos de los tintos más cotizados del país.",
+      "Muy cerca, un pueblo encaramado a un risco sobre un embalse de color turquesa."]}
+  ],
+  FANTASIA:[
+    {id:"A", titulo:"La orilla de los cuentos", lat:41.075, lon:1.140, pistas:[
+      "Una ciudad de playa con paseo de palmeras y calas escondidas al final.",
+      "Al lado, uno de los parques de atracciones más grandes de Europa.",
+      "La cena se sirve como si fuera el capítulo de un libro."]},
+    {id:"B", titulo:"El palacio del río", queso:true, lat:40.906, lon:0.493, pistas:[
+      "Un palacio que levantó un indiano al volver de América, en un jardín de árboles centenarios.",
+      "A su lado pasa uno de los ríos más caudalosos de la península, entre huertos de naranjos.",
+      "Río abajo, un delta de arrozales que se mete en el mar."]}
+  ]
+};
+
+const ESTACIONES = [
+  {id:"OTO", nombre:"Otoño", scene:"otono", desc:"Setas, caza y bosques encendidos. Lo que queda del año, a fuego lento."},
+  {id:"INV", nombre:"Invierno", scene:"invierno", desc:"Trufa negra, cuchara y chimenea. Noches largas y frío fuera."},
+  {id:"PRI", nombre:"Primavera", scene:"primavera", desc:"La huerta despierta: guisantes, alcachofas, flores. Días largos para pasear."}
+];
+
+const state = {cocina:null, podio:[], estacion:null};
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- Escenas en canvas ---------- */
+const scenes = [];
+function rand(seed){ let s = seed; return () => (s = (s*16807) % 2147483647) / 2147483647; }
+
+function makeScene(canvas, kind, extra){
+  const ctx = canvas.getContext("2d");
+  const r = rand(kind.length*977 + (extra||0)*131 + 7);
+  const parts = Array.from({length:70}, () => ({x:r(), y:r(), s:r(), v:.3+r()*.7, p:r()*6.28}));
+  const sc = {canvas, ctx, kind, parts, extra, visible:true};
+  scenes.push(sc);
+  draw(sc, 0);
+  return sc;
+}
+function size(sc){
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  const w = sc.canvas.clientWidth, h = sc.canvas.clientHeight;
+  if (sc.canvas.width !== Math.round(w*dpr) || sc.canvas.height !== Math.round(h*dpr)){
+    sc.canvas.width = Math.round(w*dpr); sc.canvas.height = Math.round(h*dpr);
+  }
+  sc.ctx.setTransform(dpr,0,0,dpr,0,0);
+  return [w,h];
+}
+function grad(ctx,h,stops){ const g = ctx.createLinearGradient(0,0,0,h); stops.forEach(([o,c])=>g.addColorStop(o,c)); return g; }
+function ridge(ctx,w,h,base,amp,freq,phase,color){
+  ctx.beginPath(); ctx.moveTo(0,h);
+  for(let x=0;x<=w;x+=4){ const y = base + Math.sin(x*freq+phase)*amp + Math.sin(x*freq*2.3+phase*1.7)*amp*.4; ctx.lineTo(x,y); }
+  ctx.lineTo(w,h); ctx.closePath(); ctx.fillStyle=color; ctx.fill();
+}
+
+function draw(sc, t){
+  const {ctx, kind, parts} = sc; const [w,h] = size(sc); if(!w||!h) return;
+  ctx.clearRect(0,0,w,h);
+  if(kind==="fuego"){
+    ctx.fillStyle = grad(ctx,h,[[0,"#1a0d10"],[.6,"#3b1416"],[1,"#7a2a14"]]); ctx.fillRect(0,0,w,h);
+    for(let i=0;i<9;i++){ const x=(i+.5)*w/9; const gl = ctx.createRadialGradient(x,h*1.02,2,x,h*1.02,w*.18);
+      const a = .35+.25*Math.sin(t/600+i); gl.addColorStop(0,`rgba(255,170,70,${a})`); gl.addColorStop(1,"rgba(255,120,40,0)"); ctx.fillStyle=gl; ctx.fillRect(0,0,w,h); }
+    ctx.strokeStyle="rgba(20,10,10,.85)"; ctx.lineWidth=2;
+    for(let i=0;i<14;i++){ const y=h*.78+ i%2*3; ctx.beginPath(); ctx.moveTo(w*.08+i*w*.065, h*.72); ctx.lineTo(w*.08+i*w*.065, h*.84); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(w*.06,h*.72); ctx.lineTo(w*.94,h*.72); ctx.stroke();
+    parts.forEach(p=>{ const y = (p.y*h - (t*.03*p.v)) % h; const yy = y<0? y+h : y; const x = p.x*w + Math.sin(t/700+p.p)*8;
+      ctx.fillStyle=`rgba(255,${150+p.s*90|0},80,${.25+.6*(yy/h)})`; ctx.beginPath(); ctx.arc(x,yy,.6+p.s*1.8,0,6.28); ctx.fill(); });
+  }
+  if(kind==="raiz"){
+    ctx.fillStyle = grad(ctx,h,[[0,"#cfd7cf"],[1,"#9fb3a0"]]); ctx.fillRect(0,0,w,h);
+    ridge(ctx,w,h,h*.45,h*.06,.012,1,"#6f8f6c");
+    ridge(ctx,w,h,h*.6,h*.05,.018,2,"#4f7450");
+    // casas blancas con contraventanas rojas
+    const n=5; for(let i=0;i<n;i++){ const bx=w*.12+i*w*.17, by=h*.58+(i%2)*h*.05, bw=w*.11, bh=h*.18;
+      ctx.fillStyle="#f6f2ea"; ctx.fillRect(bx,by,bw,bh);
+      ctx.fillStyle="#7d3a2c"; ctx.beginPath(); ctx.moveTo(bx-4,by); ctx.lineTo(bx+bw/2,by-bh*.45); ctx.lineTo(bx+bw+4,by); ctx.fill();
+      ctx.fillStyle="#a8323a"; ctx.fillRect(bx+bw*.15,by+bh*.25,bw*.2,bh*.28); ctx.fillRect(bx+bw*.65,by+bh*.25,bw*.2,bh*.28);
+      ctx.fillStyle="#2f5a35"; ctx.fillRect(bx+bw*.42,by+bh*.55,bw*.16,bh*.45); }
+    ridge(ctx,w,h,h*.86,h*.02,.02,t/4000,"#3e5f40");
+    parts.slice(0,8).forEach(p=>{ const x=(p.x*w + t*.01*p.v)%(w+40)-20; ctx.fillStyle="rgba(255,255,255,.75)"; ctx.beginPath(); ctx.ellipse(x,h*.12+p.y*h*.15,18+p.s*20,6,0,0,6.28); ctx.fill(); });
+  }
+  if(kind==="monte"){
+    ctx.fillStyle = grad(ctx,h,[[0,"#0f1530"],[.7,"#2a3358"],[1,"#5a557a"]]); ctx.fillRect(0,0,w,h);
+    parts.forEach(p=>{ if(p.y>.55) return; const a=.3+.7*Math.abs(Math.sin(t/900+p.p)); ctx.fillStyle=`rgba(255,248,230,${a*.8})`; ctx.fillRect(p.x*w,p.y*h,1+p.s,1+p.s); });
+    ctx.fillStyle="#f3e9dc"; ctx.beginPath(); ctx.arc(w*.8,h*.2,h*.07,0,6.28); ctx.fill();
+    ridge(ctx,w,h,h*.48,h*.12,.009,.4,"#3c4670");
+    ridge(ctx,w,h,h*.62,h*.09,.014,2.2,"#2a3156");
+    ridge(ctx,w,h,h*.76,h*.07,.02,4,"#1a1f3c");
+    for(let i=0;i<22;i++){ const x=(i*37.3)%w, y=h*.82+((i*13)%7); ctx.fillStyle="#0e1226"; ctx.beginPath(); ctx.moveTo(x,y-18); ctx.lineTo(x-7,y+4); ctx.lineTo(x+7,y+4); ctx.fill(); }
+  }
+  if(kind==="mar"){
+    ctx.fillStyle = grad(ctx,h,[[0,"#f2c7a0"],[.45,"#e7a07c"],[.46,"#2d5a72"],[1,"#163447"]]); ctx.fillRect(0,0,w,h);
+    ctx.fillStyle="#fbe3c4"; ctx.beginPath(); ctx.arc(w*.5,h*.45,h*.13,Math.PI,0); ctx.fill();
+    for(let k=0;k<9;k++){ const y = h*.5 + k*h*.055; ctx.strokeStyle=`rgba(250,225,200,${.45-k*.04})`; ctx.lineWidth=1.4; ctx.beginPath();
+      for(let x=0;x<=w;x+=6){ const yy = y + Math.sin(x*.04 + t/700 + k)*2.5; x?ctx.lineTo(x,yy):ctx.moveTo(x,yy); } ctx.stroke(); }
+    // barca
+    const bx = w*.22 + Math.sin(t/2000)*6, by = h*.62 + Math.sin(t/600)*2;
+    ctx.fillStyle="#b23a3a"; ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx+50,by); ctx.lineTo(bx+40,by+10); ctx.lineTo(bx+8,by+10); ctx.fill();
+    ctx.strokeStyle="#20202a"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(bx+25,by); ctx.lineTo(bx+25,by-30); ctx.stroke();
+  }
+  if(kind==="huerta"){
+    ctx.fillStyle = grad(ctx,h,[[0,"#e9b77a"],[.5,"#d98c6a"],[1,"#8a4b55"]]); ctx.fillRect(0,0,w,h);
+    ctx.fillStyle="rgba(255,240,210,.85)"; ctx.beginPath(); ctx.arc(w*.25,h*.32,h*.09,0,6.28); ctx.fill();
+    ridge(ctx,w,h,h*.45,h*.04,.01,1,"#9a6a5a");
+    ctx.fillStyle="#5d3a3f"; ctx.fillRect(0,h*.5,w,h*.5);
+    // hileras de viña en perspectiva
+    const vx = w*.62, vy = h*.5;
+    for(let i=-14;i<=14;i++){ ctx.strokeStyle= i%2? "#3f5d36":"#4f733f"; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(vx,vy); ctx.lineTo(vx + i*w*.09, h); ctx.stroke(); }
+    parts.slice(0,30).forEach(p=>{ const yy = vy + (h-vy)*p.y; const x = vx + (p.x*2-1)*w*1.2*(yy-vy)/(h-vy);
+      ctx.fillStyle="#3b2240"; ctx.beginPath(); ctx.arc(x,yy,1.2+3*(yy-vy)/(h-vy),0,6.28); ctx.fill(); });
+  }
+  if(kind==="fantasia"){
+    ctx.fillStyle = grad(ctx,h,[[0,"#241640"],[.6,"#4a2a5e"],[1,"#7c3d64"]]); ctx.fillRect(0,0,w,h);
+    const cx=w*.5, cy=h*.48;
+    parts.forEach((p,i)=>{ const a = p.p + t/(3000+p.s*3000)*(i%2?1:-1); const r = (0.12+p.y*.75)*Math.min(w,h)*.6;
+      const x = cx+Math.cos(a)*r*1.4, y = cy+Math.sin(a)*r*.7; const tw=.4+.6*Math.abs(Math.sin(t/500+p.p));
+      ctx.fillStyle=`rgba(255,230,190,${tw*.85})`; ctx.save(); ctx.translate(x,y); ctx.rotate(Math.PI/4); const z=1+p.s*2.2; ctx.fillRect(-z/2,-z/2,z,z); ctx.restore(); });
+    // naipes flotantes
+    for(let i=0;i<3;i++){ const x=w*(.28+i*.22), y=h*.55+Math.sin(t/900+i*2)*6; ctx.save(); ctx.translate(x,y); ctx.rotate(-.25+i*.25+Math.sin(t/1400+i)*.05);
+      ctx.fillStyle="#f3e9dc"; ctx.fillRect(-16,-22,32,44); ctx.fillStyle= i===1?"#9a3550":"#241640";
+      ctx.beginPath(); if(i===1){ ctx.moveTo(0,8); ctx.bezierCurveTo(-12,-2,-6,-12,0,-5); ctx.bezierCurveTo(6,-12,12,-2,0,8); } else { ctx.moveTo(0,-9); ctx.lineTo(8,0); ctx.lineTo(0,9); ctx.lineTo(-8,0); }
+      ctx.fill(); ctx.restore(); }
+    // taza
+    ctx.fillStyle="rgba(243,233,220,.9)"; ctx.beginPath(); ctx.moveTo(w*.42,h*.2); ctx.lineTo(w*.58,h*.2); ctx.quadraticCurveTo(w*.57,h*.33,w*.5,h*.33); ctx.quadraticCurveTo(w*.43,h*.33,w*.42,h*.2); ctx.fill();
+    ctx.strokeStyle="rgba(243,233,220,.9)"; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(w*.585,h*.245,h*.035,-1.3,1.3); ctx.stroke();
+  }
+  if(kind==="otono"||kind==="invierno"||kind==="primavera"){
+    const pal = {otono:[["#3a1f17","#7b3b1e"],"#d9822b"], invierno:[["#1d2633","#46566c"],"#f3f1ec"], primavera:[["#e8d6c8","#c9d8b8"],"#e79bb0"]}[kind];
+    ctx.fillStyle = grad(ctx,h,[[0,pal[0][0]],[1,pal[0][1]]]); ctx.fillRect(0,0,w,h);
+    // árbol
+    ctx.strokeStyle = kind==="primavera" ? "#5b4a3d" : "#1a1210"; ctx.lineWidth=5; ctx.lineCap="round";
+    const tree=(x,y,len,ang,d)=>{ if(d===0) return; const x2=x+Math.cos(ang)*len, y2=y+Math.sin(ang)*len; ctx.lineWidth=d*1.1; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x2,y2); ctx.stroke();
+      tree(x2,y2,len*.72,ang-.45,d-1); tree(x2,y2,len*.72,ang+.4,d-1); };
+    tree(w*.5,h,h*.3,-Math.PI/2,6);
+    parts.forEach(p=>{
+      let x,y;
+      if(kind==="invierno"){ y=(p.y*h + t*.025*p.v)%h; x=p.x*w + Math.sin(t/900+p.p)*6; ctx.fillStyle="rgba(255,255,255,.9)"; ctx.beginPath(); ctx.arc(x,y,.8+p.s*1.8,0,6.28); ctx.fill(); }
+      else { y=(p.y*h + t*.018*p.v)%h; x=(p.x*w + Math.sin(t/800+p.p)*14 + t*.006)%w; ctx.save(); ctx.translate(x,y); ctx.rotate(t/900+p.p);
+        ctx.fillStyle = kind==="otono" ? (p.s>.5?"#d9822b":"#a8432a") : (p.s>.5?"#f2b8c6":"#ffffff");
+        ctx.beginPath(); ctx.ellipse(0,0,3+p.s*3,1.6+p.s*1.4,0,0,6.28); ctx.fill(); ctx.restore(); }
+    });
+  }
+  if(kind==="brujula"){
+    const {lat,lon} = sc.extra; const b = bearing(HOME.lat,HOME.lon,lat,lon);
+    const cx=w/2, cy=h/2, R=Math.min(w,h)/2-6;
+    ctx.strokeStyle="#3a2f3d"; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(cx,cy,R,0,6.28); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,R*.72,0,6.28); ctx.stroke();
+    for(let i=0;i<16;i++){ const a=i*Math.PI/8; const r1 = i%4? R*.88 : R*.78; ctx.beginPath(); ctx.moveTo(cx+Math.sin(a)*r1,cy-Math.cos(a)*r1); ctx.lineTo(cx+Math.sin(a)*R,cy-Math.cos(a)*R); ctx.strokeStyle="#6b5d68"; ctx.stroke(); }
+    ctx.fillStyle="#b9aba3"; ctx.font=`500 ${Math.max(9,R*.17)}px "IBM Plex Mono", monospace`; ctx.textAlign="center"; ctx.textBaseline="middle";
+    [["N",0],["E",90],["S",180],["O",270]].forEach(([l,a])=>{ const rr=a*Math.PI/180; ctx.fillText(l,cx+Math.sin(rr)*R*.6,cy-Math.cos(rr)*R*.6); });
+    const wob = reduce?0:Math.sin(t/500)*1.5*Math.exp(-((t%8000)/2500));
+    const a = (b+wob)*Math.PI/180;
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(a);
+    ctx.fillStyle="#e8a85c"; ctx.beginPath(); ctx.moveTo(0,-R*.9); ctx.lineTo(R*.1,0); ctx.lineTo(-R*.1,0); ctx.fill();
+    ctx.fillStyle="#3a2f3d"; ctx.beginPath(); ctx.moveTo(0,R*.55); ctx.lineTo(R*.1,0); ctx.lineTo(-R*.1,0); ctx.fill();
+    ctx.restore(); ctx.fillStyle="#f3e9dc"; ctx.beginPath(); ctx.arc(cx,cy,3,0,6.28); ctx.fill();
+  }
+}
+
+function bearing(lat1,lon1,lat2,lon2){
+  const toR=d=>d*Math.PI/180, toD=r=>r*180/Math.PI;
+  const y=Math.sin(toR(lon2-lon1))*Math.cos(toR(lat2));
+  const x=Math.cos(toR(lat1))*Math.sin(toR(lat2))-Math.sin(toR(lat1))*Math.cos(toR(lat2))*Math.cos(toR(lon2-lon1));
+  return (toD(Math.atan2(y,x))+360)%360;
+}
+function rumbo(b){ const n=["norte","nornordeste","nordeste","estenordeste","este","estesudeste","sudeste","sudsudeste","sur","sudsudoeste","sudoeste","oestesudoeste","oeste","oestenoroeste","noroeste","nornoroeste"]; return n[Math.round(b/22.5)%16]; }
+
+let last=0;
+function loop(t){
+  if(t-last>33){ last=t; scenes.forEach(sc=>{ if(sc.visible && sc.canvas.isConnected) draw(sc,t); }); }
+  requestAnimationFrame(loop);
+}
+const io = "IntersectionObserver" in window ? new IntersectionObserver(es=>es.forEach(e=>{ const sc=scenes.find(s=>s.canvas===e.target); if(sc) sc.visible=e.isIntersecting; })) : null;
+function scene(canvas,kind,extra){ const sc = makeScene(canvas,kind,extra); if(io) io.observe(canvas); return sc; }
+
+/* ---------- Construcción ---------- */
+function el(tag, attrs={}, html=""){ const e=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v)); if(html) e.innerHTML=html; return e; }
+
+const cocinasEl = document.getElementById("cocinas");
+COCINAS.forEach(c=>{
+  const b = el("button",{type:"button",class:"card","aria-pressed":"false",id:"c-"+c.id});
+  const cv = el("canvas",{"aria-hidden":"true"});
+  b.append(cv);
+  b.append(el("div",{class:"body"},`<span class="tag">${c.sub}</span><h3>${c.nombre}</h3><p class="desc">${c.desc}</p><span class="pick">Elijo esta cocina</span>`));
+  b.addEventListener("click",()=>elegirCocina(c.id));
+  cocinasEl.append(b);
+  scene(cv,c.scene);
+});
+
+const estEl = document.getElementById("estaciones");
+ESTACIONES.forEach(s=>{
+  const b = el("button",{type:"button",class:"card","aria-pressed":"false",id:"e-"+s.id});
+  const cv = el("canvas",{"aria-hidden":"true"});
+  b.append(cv);
+  b.append(el("div",{class:"body"},`<h3>${s.nombre}</h3><p class="desc">${s.desc}</p><span class="pick">Esta estación</span>`));
+  b.addEventListener("click",()=>elegirEstacion(s.id));
+  estEl.append(b);
+  scene(cv,s.scene);
+});
+
+function marcar(container, id){
+  container.classList.add("has-choice");
+  container.querySelectorAll(".card").forEach(c=>c.setAttribute("aria-pressed", String(c.id===id)));
+}
+function irA(id){ const s=document.getElementById(id); s.hidden=false; requestAnimationFrame(()=>scenes.forEach(sc=>draw(sc,performance.now()))); requestAnimationFrame(()=>s.scrollIntoView({behavior: reduce?"auto":"smooth", block:"start"})); }
+
+function nombreDe(p){ const c=COCINAS.find(x=>x.id===p.cocina), d=DESTINOS[p.cocina].find(x=>x.id===p.destino); return {c,d}; }
+function enPodio(cid,did){ return state.podio.findIndex(p=>p.cocina===cid && p.destino===did); }
+const ORD = ["1ª","2ª","3ª"];
+
+function elegirCocina(id){
+  state.cocina=id;
+  marcar(cocinasEl,"c-"+id); cocinasEl.classList.remove("has-choice");
+  pintarDestinos();
+  irA("paso2");
+}
+function pintarDestinos(){
+  const id = state.cocina; if(!id) return;
+  const dEl = document.getElementById("destinos"); dEl.innerHTML="";
+  for(let i=scenes.length-1;i>=0;i--) if(scenes[i].kind==="brujula"){ if(io) io.unobserve(scenes[i].canvas); scenes.splice(i,1); }
+  DESTINOS[id].forEach(d=>{
+    const pos = enPodio(id,d.id);
+    const b = el("button",{type:"button",class:"card","aria-pressed":String(pos>=0),id:"d-"+d.id});
+    const top = el("div",{class:"dest-top"});
+    const cv = el("canvas",{"aria-hidden":"true"});
+    const br = bearing(HOME.lat,HOME.lon,d.lat,d.lon);
+    top.append(cv);
+    top.append(el("div",{},`<span class="tag">Rumbo ${rumbo(br)}</span><h3>${d.titulo}</h3>`));
+    b.append(top);
+    const q = d.queso ? `<p class="queso"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17 L20 7 L21 17 Z" fill="#e8a85c"/><circle cx="12" cy="14" r="1.6" fill="#17121a"/><circle cx="17" cy="12.5" r="1.1" fill="#17121a"/><circle cx="16" cy="15.6" r=".9" fill="#17121a"/></svg><span>El menú puede llevar queso, pero ya lo gestionamos.</span></p>` : "";
+    const lleno = state.podio.length>=3 && pos<0;
+    const pick = pos>=0 ? `Tu ${ORD[pos]} opción · tocar para quitar` : lleno ? "Podio completo · quita una para cambiar" : `Añadir como ${ORD[state.podio.length]} opción`;
+    const f = d.fuera ? `<p class="visto fuera"><span aria-hidden="true">✈</span><span>${d.fuera}</span></p>` : "";
+    const v = d.visto ? `<p class="visto"><span aria-hidden="true">↺</span><span>${d.visto}</span></p>` : "";
+    b.append(el("div",{class:"body"},`<ul class="clues">${d.pistas.map(p=>`<li>${p}</li>`).join("")}</ul>${f}${v}${q}<span class="pick">${pick}</span>`));
+    b.addEventListener("click",()=>tocarDestino(d.id));
+    dEl.append(b);
+    scene(cv,"brujula",{lat:d.lat,lon:d.lon});
+  });
+  requestAnimationFrame(()=>scenes.forEach(sc=>draw(sc,performance.now())));
+}
+function tocarDestino(did){
+  const pos = enPodio(state.cocina,did);
+  if(pos>=0) state.podio.splice(pos,1);
+  else if(state.podio.length<3) state.podio.push({cocina:state.cocina, destino:did});
+  else return;
+  pintarDestinos(); pintarPodio();
+  if(pos<0) irA("podio");
+}
+function pintarPodio(){
+  const sec = document.getElementById("podio"); const list = document.getElementById("podioLista");
+  sec.hidden = state.podio.length===0;
+  list.innerHTML = "";
+  for(let i=0;i<3;i++){
+    const p = state.podio[i];
+    const li = el("li",{class: p? "slot lleno":"slot"});
+    if(p){
+      const {c,d} = nombreDe(p);
+      li.innerHTML = `<span class="ord">${i+1}</span><span class="what"><b>${d.titulo}</b><small>${c.nombre} · ${c.sub}</small></span>
+        <span class="ops"><button type="button" class="mini" data-a="up" data-i="${i}" ${i===0?"disabled":""} aria-label="Subir">↑</button><button type="button" class="mini" data-a="down" data-i="${i}" ${i===state.podio.length-1?"disabled":""} aria-label="Bajar">↓</button><button type="button" class="mini" data-a="del" data-i="${i}" aria-label="Quitar">×</button></span>`;
+    } else {
+      li.innerHTML = `<span class="ord">${i+1}</span><span class="what"><small>Hueco libre</small></span>`;
+    }
+    list.append(li);
+  }
+  const falta = 3-state.podio.length;
+  const n = state.podio.length;
+  const sig = ORD[n];
+  document.getElementById("podioPaso").textContent = falta
+    ? `Siguiente paso: elige tu ${sig} opción. Llevas ${n} de 3.`
+    : "Podio completo. Revisa el orden y pasa a la estación.";
+  document.getElementById("podioMsg").textContent = falta ? `Pulsa «Elegir mi ${sig} opción», abre cualquier cocina (puede ser la misma u otra) y añade otro lugar.` : "";
+  const mo = document.getElementById("masOpciones"); mo.hidden = !falta; mo.textContent = falta ? `Elegir mi ${sig} opción` : "";
+  const av = document.getElementById("paso1Aviso"); av.hidden = !(n>0 && falta); av.textContent = `Llevas ${n} de 3 en tu podio. Elige ahora tu ${sig} opción.`;
+  document.getElementById("aEstacion").hidden = !!falta;
+  if(falta){ document.getElementById("paso3").hidden=true; document.getElementById("final").hidden=true; }
+}
+document.getElementById("podioLista").addEventListener("click",e=>{
+  const b = e.target.closest("button"); if(!b) return; const i=+b.dataset.i, a=b.dataset.a, P=state.podio;
+  if(a==="del") P.splice(i,1);
+  if(a==="up" && i>0) [P[i-1],P[i]]=[P[i],P[i-1]];
+  if(a==="down" && i<P.length-1) [P[i+1],P[i]]=[P[i],P[i+1]];
+  pintarPodio(); pintarDestinos();
+  if(!document.getElementById("final").hidden && state.estacion) elegirEstacion(state.estacion, true);
+});
+document.getElementById("masOpciones").addEventListener("click",()=>irA("paso1"));
+document.getElementById("volverCocinas").addEventListener("click",()=>irA("paso1"));
+document.getElementById("aEstacion").addEventListener("click",()=>irA("paso3"));
+
+function elegirEstacion(id, quieto){
+  state.estacion=id; marcar(estEl,"e-"+id);
+  const s = ESTACIONES.find(x=>x.id===id);
+  const filas = state.podio.map((p,i)=>{ const {c,d}=nombreDe(p); return `<div><span>${ORD[i]} opción</span><span>${d.titulo} · ${c.nombre}</span></div>`; }).join("");
+  const clave = state.podio.map(p=>`${p.cocina}-${p.destino}`).join(" > ") + " · " + s.id;
+  document.getElementById("ticket").innerHTML = filas +
+    `<div><span>Estación</span><span>${s.nombre} (orientativa, según mesa libre)</span></div>
+     <div><span>Clave</span><span>${clave}</span></div>`;
+  const txt = "Mi regalo de cumpleaños, por orden: " + state.podio.map((p,i)=>{ const {c,d}=nombreDe(p); return `${i+1}) ${d.titulo} (${c.nombre})`; }).join("; ") + `. Estación: ${s.nombre} (orientativa). Clave ${clave}`;
+  const ta = document.getElementById("clave"); ta.value = txt; ta.hidden = true;
+  document.getElementById("copiado").hidden = true;
+  if(!finalScene) finalScene = scene(document.getElementById("finalCanvas"), s.scene);
+  else finalScene.kind = s.scene;
+  if(!quieto) irA("final"); else draw(finalScene, performance.now());
+}
+let finalScene = null;
+
+document.getElementById("copiar").addEventListener("click", ()=>{
+  const ta = document.getElementById("clave"), ok = document.getElementById("copiado");
+  const fallback = ()=>{ ta.hidden=false; ta.focus(); ta.select(); ok.textContent="Selecciónalo y cópialo a mano."; ok.hidden=false; };
+  try{
+    navigator.clipboard.writeText(ta.value).then(()=>{ ok.textContent="Copiado. Ya puedes pegarlo en un mensaje."; ok.hidden=false; }, fallback);
+  }catch(e){ fallback(); }
+});
+document.getElementById("reiniciar").addEventListener("click", ()=>{
+  state.cocina=state.estacion=null; state.podio=[];
+  cocinasEl.classList.remove("has-choice"); cocinasEl.querySelectorAll(".card").forEach(c=>c.setAttribute("aria-pressed","false"));
+  estEl.classList.remove("has-choice"); estEl.querySelectorAll(".card").forEach(c=>c.setAttribute("aria-pressed","false"));
+  ["paso2","podio","paso3","final"].forEach(i=>document.getElementById(i).hidden=true);
+  document.getElementById("paso1").scrollIntoView({behavior: reduce?"auto":"smooth"});
+});
+pintarPodio();
+
+scene(document.getElementById("heroCanvas"),"fuego");
+window.addEventListener("resize",()=>scenes.forEach(sc=>draw(sc,performance.now())));
+if(!reduce) requestAnimationFrame(loop);
+</script>
+
+</body>
+</html>
